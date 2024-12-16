@@ -1,0 +1,6 @@
+{
+    "python.analysis.completeFunctionParens": false,
+    "python.autoComplete.extraPaths": [
+        
+    ]
+}
