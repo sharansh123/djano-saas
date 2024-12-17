@@ -46,7 +46,7 @@ RUN pip install -r /tmp/requirements.txt
 
 #SET env variables
 
-ARG DEBUG
+ARG DEBUG=0
 ENV DEBUG = ${DEBUG}
 
 # database isn't available during build
