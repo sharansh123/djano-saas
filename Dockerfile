@@ -51,7 +51,7 @@ RUN python manage.py collectstatic --noinput
 
 # set the Django default project name
 ARG PROJ_NAME="demo"
-ARG DJANGO_SECRET_KEY
+ARG DJANGO_SECRET_KEY="django-insecure-bc)1suxl@k!yp(07*ai9a81=w0(8@r2ljx*7%*e%9e$1!6swfp"
 ENV DJANGO_SECRET_KEY = ${DJANGO_SECRET_KEY}
 # create a bash script to run the Django project
 # this script will execute at runtime when
