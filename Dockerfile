@@ -43,6 +43,12 @@ COPY ./src /code
 # Install the Python project requirements
 RUN pip install -r /tmp/requirements.txt
 
+
+#SET env variables
+
+ARG DEBUG
+ENV DEBUG = ${DEBUG}
+
 # database isn't available during build
 # run any other commands that do not need the database
 # such as:
