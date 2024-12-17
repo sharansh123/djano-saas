@@ -51,7 +51,8 @@ RUN python manage.py collectstatic --noinput
 
 # set the Django default project name
 ARG PROJ_NAME="demo"
-
+ARG DJANGO_SECRET_KEY
+ENV DJANGO_SECRET_KEY = ${DJANGO_SECRET_KEY}
 # create a bash script to run the Django project
 # this script will execute at runtime when
 # the container starts and the database is available
