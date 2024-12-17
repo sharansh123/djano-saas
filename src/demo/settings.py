@@ -15,6 +15,8 @@ from email.policy import default
 from decouple import config
 from pathlib import Path
 
+from django.conf.global_settings import STATIC_URL
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 print(BASE_DIR)
@@ -138,8 +140,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = 'static/'
+STATIC_BASE_DIR = BASE_DIR / 'staticfiles'
+STATICFILES_VENDORS_DIR = STATIC_BASE_DIR / 'vendors'
+
+STATICFILES_DIRS = [
+    STATIC_BASE_DIR
+]
+
+#output for python manage.py collectstatic
+#local cdn
+STATIC_ROOT = BASE_DIR.parent / 'local-cdn'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

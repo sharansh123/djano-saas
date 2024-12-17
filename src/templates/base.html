@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% include 'base/css.html' %}
     <title>{% block title %}SaaS{% endblock title %}</title>
 </head>
 <body>
+    {% include 'navbar/navbar.html' %}
     <h1>{{ page_title }}</h1>
     {% block content %}
-
     {% endblock content %}
+    {% include 'base/js.html' %}
 </body>
 </html>
