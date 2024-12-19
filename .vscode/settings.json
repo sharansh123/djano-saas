@@ -1,6 +1,11 @@
 {
     "python.analysis.completeFunctionParens": false,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.extraPaths": [
+        "/Users/s1b0823/saas/saas/lib/python3.11/site-packages"
+    ],
+    "python.defaultInterpreterPath": "/Users/s1b0823/saas/saas/bin/python",
     "python.autoComplete.extraPaths": [
-        
+        "/Users/s1b0823/saas/saas/lib/python3.11/site-packages"
     ]
 }
