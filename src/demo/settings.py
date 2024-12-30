@@ -12,8 +12,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from email.policy import default
 from pickle import TRUE
-
-import django.core.mail.backends.smtp
 from decouple import config
 from pathlib import Path
 
@@ -42,6 +40,7 @@ SECRET_KEY = "django-insecure-bc)1suxl@k!yp(07*ai9a81=w0(8@r2ljx*7%*e%9e$1!6swfp
 DEBUG = True # config("DEBUG",cast=bool,default=False)#str(os.environ.get("DEBUG")).lower() == "true"
 print(DEBUG,type(DEBUG))
 
+
 ALLOWED_HOSTS = [
     '.railway.app'
 ]
@@ -62,13 +61,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'visits',
     'commando',
+    'profiles',
+    'subscriptions',
+    "slippers",
     'allauth_ui',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
     'widget_tweaks',
-    "slippers",
+    "customers"
+
 ]
 
 MIDDLEWARE = [

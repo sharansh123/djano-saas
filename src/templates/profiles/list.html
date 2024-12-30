@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Homepage - {{block.super}}{% endblock title %}
+
+    {% block content %}
+<p> Users </p>
+    {% if perms.auth %}
+    {% if perms.auth.view_user %}
+    {%for instance in object_list %}
+    <li><a href = "/profiles/{{instance.username}}">{{ instance.username }}</a></li>
+    {% endfor %}
+    {% else %}
+        <div> You are not allowed to see this! </div>
+    {% endif %}
+{% endif %}
+    {% endblock content %}
