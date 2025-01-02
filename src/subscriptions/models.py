@@ -5,7 +5,6 @@ from django.db.models.signals import post_save
 from django.conf import settings
 
 import helpers.billing
-import stripe
 # Create your models here.
 
 User = settings.AUTH_USER_MODEL
@@ -27,6 +26,10 @@ class Subscription(models.Model):
             "codename__in": [x[0] for x in SUBSCRIPTION_PERMISSIONS]
         })
     stripe_id = models.CharField(max_length=120, blank=True, null=True)
+    order = models.IntegerField(default=-1, help_text='For Django Pricing Page')
+    featured = models.BooleanField(default=True,help_text='For Django Price Page')
+    updated = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.name}"
@@ -40,7 +43,9 @@ class Subscription(models.Model):
         super().save(*args,**kwargs)
     
     class Meta:
+        ordering = ['order', 'featured', 'updated']   
         permissions = SUBSCRIPTION_PERMISSIONS
+    
 class SubscriptionPrice(models.Model):
 
     class IntervalChoices(models.TextChoices):
@@ -52,7 +57,13 @@ class SubscriptionPrice(models.Model):
     stripe_id= models.CharField(max_length=120, blank=True, null=True)
     interval = models.CharField(max_length=120, default=IntervalChoices.MONTHLY, choices=IntervalChoices.choices)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=99.99)
+    order = models.IntegerField(default=-1, help_text='For Django Pricing Page')
+    featured = models.BooleanField(default=True,help_text='For Django Price Page')
+    updated = models.DateTimeField(auto_now=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['order', 'featured', 'updated']    
 
     @property
     def stripe_currency(self):
@@ -60,7 +71,7 @@ class SubscriptionPrice(models.Model):
     
     @property
     def stripe_price(self):
-        return self.price * 100
+        return int(self.price * 100)
 
     @property
     def product_stripe_id(self):
@@ -70,6 +81,7 @@ class SubscriptionPrice(models.Model):
     
     def save(self, *args, **kwargs):
         if(not self.stripe_id and self.product_stripe_id is not None):
+            print("Creating Price!")
             stripe_id = helpers.billing.create_price(
                 currency=self.stripe_currency,
                 unit_amount=self.stripe_price,
@@ -78,8 +90,14 @@ class SubscriptionPrice(models.Model):
                 metadata={"subs_plan_price":self.id},
                 raw = False
             )
-        self.stripe_id = stripe_id   
-        super.save(*args, **kwargs)
+            self.stripe_id = stripe_id   
+        super().save(*args, **kwargs)
+        if self.featured and self.subscription:
+            qs = SubscriptionPrice.objects.filter(
+                subscription=self.subscription,
+                interval = self.interval
+            ).exclude(id=self.id)
+            qs.update(featured=False)
 
 
 class UserSubscription(models.Model):

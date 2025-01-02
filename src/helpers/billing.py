@@ -1,7 +1,7 @@
 from decouple import config
 import stripe
 
-DJANGO_DEBUG = config('DEBUG', default=False, cast=bool)
+DJANGO_DEBUG = True#config('DEBUG', default=False, cast=bool)
 STRIPE_SECRET_KEY = config('STRIPE_KEY', default="", cast=str)
 
 if "sk_test" in STRIPE_SECRET_KEY and not DJANGO_DEBUG:
@@ -47,7 +47,7 @@ def create_price(
     resp = stripe.Price.create(
                 currency= currency,
                 unit_amount=unit_amount,
-                recurring=recurring,
+                recurring={"interval": interval},
                 product=product,
                 metadata=metadata
             )
