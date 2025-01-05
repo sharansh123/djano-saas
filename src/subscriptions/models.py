@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth.models import Group, Permission
 from django.db.models.signals import post_save
 from django.conf import settings
+from django.urls import reverse
 
 import helpers.billing
 # Create your models here.
@@ -18,6 +19,7 @@ SUBSCRIPTION_PERMISSIONS = [
 
 class Subscription(models.Model):
     name = models.CharField(max_length=120)
+    subtitle = models.TextField(blank=True, null=True)
     active = models.BooleanField(default=True)
     groups = models.ManyToManyField(Group)
     permissions = models.ManyToManyField(Permission,
@@ -30,9 +32,15 @@ class Subscription(models.Model):
     featured = models.BooleanField(default=True,help_text='For Django Price Page')
     updated = models.DateTimeField(auto_now=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    features = models.TextField(help_text="features", blank=True, null=True)
 
     def __str__(self):
         return f"{self.name}"
+    
+    def get_features_as_list(self):
+        if not self.features:
+            return []
+        return [x.strip() for x in self.features.split("\n")]
     
     def save(self, *args, **kwargs):
         if not self.stripe_id:
@@ -52,7 +60,6 @@ class SubscriptionPrice(models.Model):
         MONTHLY = "month", "Monthly"
         YEARLY = "year", "Yearly"
 
-
     subscription= models.ForeignKey(Subscription,on_delete=models.SET_NULL, null=True)
     stripe_id= models.CharField(max_length=120, blank=True, null=True)
     interval = models.CharField(max_length=120, default=IntervalChoices.MONTHLY, choices=IntervalChoices.choices)
@@ -63,11 +70,35 @@ class SubscriptionPrice(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['order', 'featured', 'updated']    
+        ordering = ['order', 'featured', 'updated']
+
+    def get_checkout_url(self):
+        return reverse("sub-price-checkout" ,
+                       kwargs={
+                           "price_id":self.id
+                       })
 
     @property
     def stripe_currency(self):
         return "usd"
+
+    @property
+    def display_sub_name(self):
+        if not self.subscription:
+            return "Plan"
+        return self.subscription.name
+    
+    @property
+    def display_subtitle(self):
+        if not self.subscription:
+            return "Plan"
+        return self.subscription.subtitle
+    
+    @property
+    def display_feature_list(self):
+        if not self.subscription:
+            return []
+        return self.subscription.get_features_as_list()
     
     @property
     def stripe_price(self):
