@@ -45,6 +45,8 @@ ALLOWED_HOSTS = [
     '.railway.app'
 ]
 
+BASE_URL = config("BASE_URL", default=None)
+
 if DEBUG:
     ALLOWED_HOSTS = ALLOWED_HOSTS + [
         "127.0.0.1",

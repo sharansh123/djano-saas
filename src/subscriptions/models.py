@@ -132,9 +132,31 @@ class SubscriptionPrice(models.Model):
 
 
 class UserSubscription(models.Model):
+    class SubscriptionStatus(models.TextChoices):
+        ACTIVE = 'active', 'Active'
+        INCOMPLETE = 'incomplete', 'Incomplete'
+        CANCELED = 'canceled', 'Canceled'
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     subcription = models.ForeignKey(Subscription, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=True)
+    stripe_id = models.CharField(max_length=120,blank=True, null=True)
+    user_cancelled = models.BooleanField(default=False)
+    original_period_start = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    current_period_start = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    current_period_end = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
+    status= models.CharField(max_length=120, choices=SubscriptionStatus.choices, blank=True, null=True)
+
+
+    def save(self, *args, **kwargs):
+        if(self.original_period_start is None and self.current_period_start is not None):
+            self.original_period_start = self.current_period_start
+        super().save(*args, **kwargs)
+    
+    @property
+    def billing_cycle_anchor(self):
+        if self.current_period_end:
+            return int(self.current_period_end.timestamp())
+        return None
 
 
 def user_post_save_signal(sender, instance, *args, **kwargs):
@@ -150,11 +172,12 @@ def user_post_save_signal(sender, instance, *args, **kwargs):
     else:
         sub_qs = Subscription.objects.filter(active=True)
         if sub_obj is not None:
+            print("not none!")
             sub_qs = sub_qs.exclude(id=sub_obj.id)#2.3
-        subs_grp = sub_qs.value_list("groups__id", flat=True)# c.d.e.f
+        subs_grp = sub_qs.values_list("groups__id", flat=True)# c.d.e.f
         subs_grp_set = set(subs_grp)# c.d.e.f
-        grp_ids = grp_obj.value_list('id', flat=True)#a.b
-        current_grp = user.groups.all().value_list('id', flat=True)#a.b.c.g
+        grp_ids = grp_obj.values_list('id', flat=True)#a.b
+        current_grp = user.groups.all().values_list('id', flat=True)#a.b.c.g
         grp_ids_set = set(grp_ids)#a.b
         current_grp_set = set(current_grp) - subs_grp_set#a.b.c.g - c.d.e.f = a.b.g
         final_list = list(grp_ids_set | current_grp_set) #a.b.g
